@@ -1,13 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Layer, Image } from 'react-konva';
 import { useImage } from 'react-konva-utils';
 
-import idleSpriteSheet from 'src/assets/hero/idle.png';
-import runningSpriteSheet from 'src/assets/hero/running.png';
+import type { ActionType, DirectionType } from 'src/interfaces';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
-type DirectionType = 'right' | 'left' | 'top' | 'bottom';
-type ActionType = 'running' | 'idle';
+import { animations } from '../../animations';
 
 interface SpriteState {
   x: number;
@@ -24,9 +22,6 @@ const keyEvent: Record<string, DirectionType> = {
   ArrowDown: 'bottom',
 };
 
-const FRAME_WIDTH = 42;
-const FRAME_HEIGHT = 64;
-
 export interface IHeroSpriteProps {
   map: IMap;
   initialPosX: number;
@@ -38,6 +33,8 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
   const animationRef = useRef<number>(0);
   const frameCounterRef = useRef<number>(0);
 
+  const { idle, running, axe } = animations;
+
   const [spriteState, setSpriteState] = useState<SpriteState>({
     x: initialPosX,
     y: initialPosY,
@@ -46,14 +43,18 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
     direction: 'right',
   });
 
-  const [idleImage] = useImage(idleSpriteSheet);
-  const [runningImage] = useImage(runningSpriteSheet);
+  const [idleImage] = useImage(idle.spriteSheetUrl);
+  const [runningImage] = useImage(running.spriteSheetUrl);
+  const [axeImage] = useImage(axe.spriteSheetUrl);
 
-  const moveSpeed = 2;
-  const runningFrames = 8; // Количество кадров в анимации бега
-  const idleFrames = 9; // Количество кадров в анимации простоя
-  const runningFrameDelay = 10;
-  const idleFrameDelay = 13;
+  const currentSpriteSheet: Record<ActionType, HTMLImageElement | undefined> = useMemo(
+    () => ({
+      idle: idleImage,
+      running: runningImage,
+      axe: axeImage,
+    }),
+    [idleImage, runningImage, axeImage],
+  );
 
   const animateRunning = (): void => {
     frameCounterRef.current += 1;
@@ -64,15 +65,17 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
       let newY = prev.y;
 
       // Меняем кадр только каждый N-ный раз
-      if (frameCounterRef.current % runningFrameDelay === 0) {
-        const { tileSize } = map;
-        newFrame = (prev.currentFrame + 1) % runningFrames;
+      if (frameCounterRef.current % running.frameDelay === 0) {
+        // const { tileSize } = map;
+        newFrame = (prev.currentFrame + 1) % running.framesCount;
         /*
           Вычисляем местоположение персонажа для взаимодействия с объектами
         */
-        const col = Math.floor(newX / tileSize);
-        const row = Math.floor(newY / tileSize);
+        // const col = Math.floor(newX / tileSize);
+        // const row = Math.floor(newY / tileSize);
       }
+
+      const moveSpeed = running.moveSpeed ?? 2;
 
       if (prev.direction === 'right') newX = prev.x + moveSpeed;
       if (prev.direction === 'left') newX = prev.x - moveSpeed;
@@ -97,8 +100,28 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
       let newFrame = prev.currentFrame;
 
       // Меняем кадр только каждый N-ный раз
-      if (frameCounterRef.current % idleFrameDelay === 0) {
-        newFrame = (prev.currentFrame + 1) % idleFrames;
+      if (frameCounterRef.current % idle.frameDelay === 0) {
+        newFrame = (prev.currentFrame + 1) % idle.framesCount;
+      }
+
+      return {
+        ...prev,
+        currentFrame: newFrame,
+      };
+    });
+
+    animationRef.current = requestAnimationFrame(animateIdle);
+  };
+
+  const animateAxe = (): void => {
+    frameCounterRef.current += 1;
+
+    setSpriteState((prev) => {
+      let newFrame = prev.currentFrame;
+
+      // Меняем кадр только каждый N-ный раз
+      if (frameCounterRef.current % axe.frameDelay === 0) {
+        newFrame = (prev.currentFrame + 1) % axe.framesCount;
       }
 
       return {
@@ -112,6 +135,8 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
 
   useEffect(() => {
     if (spriteState.action === 'running') {
+      cancelAnimationFrame(animationRef.current);
+      frameCounterRef.current = 0;
       animationRef.current = requestAnimationFrame(animateRunning);
     }
     if (spriteState.action === 'idle') {
@@ -119,6 +144,12 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
       frameCounterRef.current = 0;
       setSpriteState((prev) => ({ ...prev, currentFrame: 0 }));
       animationRef.current = requestAnimationFrame(animateIdle);
+    }
+    if (spriteState.action === 'axe') {
+      cancelAnimationFrame(animationRef.current);
+      frameCounterRef.current = 0;
+      setSpriteState((prev) => ({ ...prev, currentFrame: 0 }));
+      animationRef.current = requestAnimationFrame(animateAxe);
     }
 
     return () => {
@@ -134,6 +165,12 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
           ...prev,
           action: 'running',
           direction,
+        }));
+      }
+      if (e.key === 'f') {
+        setSpriteState((prev) => ({
+          ...prev,
+          action: 'axe',
         }));
       }
     };
@@ -154,30 +191,37 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
     };
   }, []);
 
-  const getSpriteCoord = useCallback(() => {
-    const gap = 5;
-    return spriteState.currentFrame * (FRAME_WIDTH + gap);
-  }, [spriteState.currentFrame]);
+  const currentAnimation = animations[spriteState.action];
+  const currentAnimationWidth = currentAnimation.frames[spriteState.currentFrame]?.width || 0;
+  const currentAnimationHeight = currentAnimation.frames[spriteState.currentFrame]?.height || 0;
 
-  const currentSpriteSheet = spriteState.action === 'running' ? runningImage : idleImage;
+  const getSpriteCoord = useCallback(() => {
+    let nextX = 0;
+    for (let i = 0; i < spriteState.currentFrame; i++) {
+      nextX += currentAnimation.frames[i].width + currentAnimation.gap;
+    }
+    return {
+      x: nextX,
+      y: currentAnimation.spriteSheetHeight - currentAnimationHeight,
+    };
+  }, [spriteState.currentFrame, currentAnimation, currentAnimationHeight, currentAnimationWidth]);
 
   return (
     <Layer>
       {currentSpriteSheet && (
         <Image
           ref={imageRef}
-          image={currentSpriteSheet}
+          image={currentSpriteSheet[spriteState.action]}
           x={spriteState.x}
           y={spriteState.y}
           scaleX={spriteState.direction === 'left' ? -1 : 1}
-          offsetX={spriteState.direction === 'left' ? FRAME_WIDTH : 0}
-          width={FRAME_WIDTH}
-          height={FRAME_HEIGHT}
+          offsetX={spriteState.direction === 'left' && spriteState.action !== 'axe' ? currentAnimationWidth : 0}
+          width={currentAnimationWidth}
+          height={currentAnimationHeight}
           crop={{
-            x: getSpriteCoord(),
-            y: 0,
-            width: FRAME_WIDTH,
-            height: FRAME_HEIGHT,
+            ...getSpriteCoord(),
+            width: currentAnimationWidth,
+            height: currentAnimationHeight,
           }}
         />
       )}
