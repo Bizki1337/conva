@@ -47,7 +47,7 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
   const [runningImage] = useImage(running.spriteSheetUrl);
   const [axeImage] = useImage(axe.spriteSheetUrl);
 
-  const currentSpriteSheet: Record<ActionType, HTMLImageElement | undefined> = useMemo(
+  const spriteSheets: Record<ActionType, HTMLImageElement | undefined> = useMemo(
     () => ({
       idle: idleImage,
       running: runningImage,
@@ -55,6 +55,10 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
     }),
     [idleImage, runningImage, axeImage],
   );
+
+  const currentAnimation = animations[spriteState.action];
+  const currentAnimationWidth = currentAnimation.frames[spriteState.currentFrame]?.width || 0;
+  const currentAnimationHeight = currentAnimation.frames[spriteState.currentFrame]?.height || 0;
 
   const animateRunning = (): void => {
     frameCounterRef.current += 1;
@@ -66,7 +70,6 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
 
       // Меняем кадр только каждый N-ный раз
       if (frameCounterRef.current % running.frameDelay === 0) {
-        // const { tileSize } = map;
         newFrame = (prev.currentFrame + 1) % running.framesCount;
         /*
           Вычисляем местоположение персонажа для взаимодействия с объектами
@@ -81,6 +84,15 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
       if (prev.direction === 'left') newX = prev.x - moveSpeed;
       if (prev.direction === 'top') newY = prev.y - moveSpeed;
       if (prev.direction === 'bottom') newY = prev.y + moveSpeed;
+
+      const { height: mapHeight, width: mapWidth } = map;
+      const minX = 0;
+      const minY = 0;
+      const maxX = mapWidth - currentAnimationWidth;
+      const maxY = mapHeight - currentAnimationHeight;
+
+      if (newX <= minX || newX >= maxX) newX = prev.x;
+      if (newY <= minY || newY >= maxY) newY = prev.y;
 
       return {
         ...prev,
@@ -191,10 +203,6 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
     };
   }, []);
 
-  const currentAnimation = animations[spriteState.action];
-  const currentAnimationWidth = currentAnimation.frames[spriteState.currentFrame]?.width || 0;
-  const currentAnimationHeight = currentAnimation.frames[spriteState.currentFrame]?.height || 0;
-
   const getSpriteCoord = useCallback(() => {
     let nextX = 0;
     for (let i = 0; i < spriteState.currentFrame; i++) {
@@ -208,10 +216,10 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
 
   return (
     <Layer>
-      {currentSpriteSheet && (
+      {spriteSheets && (
         <Image
           ref={imageRef}
-          image={currentSpriteSheet[spriteState.action]}
+          image={spriteSheets[spriteState.action]}
           x={spriteState.x}
           y={spriteState.y}
           scaleX={spriteState.direction === 'left' ? -1 : 1}
