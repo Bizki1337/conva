@@ -1,3 +1,5 @@
+import 'src/styles/variables.scss';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 

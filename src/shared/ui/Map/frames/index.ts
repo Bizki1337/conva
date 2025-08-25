@@ -1,0 +1,1 @@
+export { HeroSprite } from './HeroSprite';

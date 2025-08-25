@@ -18,9 +18,11 @@ export default [
   {
     plugins: { import: importPlugin },
     rules: {
-      'no-unused-vars': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
       'import/no-unused-modules': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       'import/order': [
         'warn',
         {
