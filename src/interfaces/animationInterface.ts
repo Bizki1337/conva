@@ -15,4 +15,5 @@ export interface IAnimation {
 }
 
 export type DirectionType = 'right' | 'left' | 'top' | 'bottom';
-export type ActionType = 'running' | 'idle' | 'axe';
+export type ActionType = 'idle' | 'running' | 'axe' | 'treeHit' | 'treeHitLeaves';
+export type HeroActionsType = Extract<ActionType, 'idle' | 'running' | 'axe'>;

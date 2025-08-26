@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Layer, Image } from 'react-konva';
 import { useImage } from 'react-konva-utils';
 
-import type { ActionType, DirectionType } from 'src/interfaces';
+import type { HeroActionsType, DirectionType } from 'src/interfaces';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
 import { animations } from '../../animations';
@@ -11,7 +11,7 @@ interface SpriteState {
   x: number;
   y: number;
   currentFrame: number;
-  action: ActionType;
+  action: HeroActionsType;
   direction: DirectionType;
 }
 
@@ -29,7 +29,6 @@ export interface IHeroSpriteProps {
 }
 
 export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) => {
-  const imageRef = useRef(null);
   const animationRef = useRef<number>(0);
   const frameCounterRef = useRef<number>(0);
 
@@ -47,7 +46,7 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
   const [runningImage] = useImage(running.spriteSheetUrl);
   const [axeImage] = useImage(axe.spriteSheetUrl);
 
-  const spriteSheets: Record<ActionType, HTMLImageElement | undefined> = useMemo(
+  const spriteSheets: Record<HeroActionsType, HTMLImageElement | undefined> = useMemo(
     () => ({
       idle: idleImage,
       running: runningImage,
@@ -127,39 +126,36 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
 
   const animateAxe = (): void => {
     frameCounterRef.current += 1;
+    let isLastFrame = false;
 
     setSpriteState((prev) => {
-      let newFrame = prev.currentFrame;
-
       // Меняем кадр только каждый N-ный раз
       if (frameCounterRef.current % axe.frameDelay === 0) {
-        newFrame = (prev.currentFrame + 1) % axe.framesCount;
+        isLastFrame = prev.currentFrame >= axe.framesCount - 1;
+        return {
+          ...prev,
+          currentFrame: isLastFrame ? 0 : prev.currentFrame + 1,
+          action: isLastFrame ? 'idle' : prev.action,
+        };
       }
 
-      return {
-        ...prev,
-        currentFrame: newFrame,
-      };
+      return prev;
     });
 
-    animationRef.current = requestAnimationFrame(animateIdle);
+    if (!isLastFrame) animationRef.current = requestAnimationFrame(animateAxe);
   };
 
   useEffect(() => {
+    cancelAnimationFrame(animationRef.current);
+    frameCounterRef.current = 0;
     if (spriteState.action === 'running') {
-      cancelAnimationFrame(animationRef.current);
-      frameCounterRef.current = 0;
       animationRef.current = requestAnimationFrame(animateRunning);
     }
     if (spriteState.action === 'idle') {
-      cancelAnimationFrame(animationRef.current);
-      frameCounterRef.current = 0;
       setSpriteState((prev) => ({ ...prev, currentFrame: 0 }));
       animationRef.current = requestAnimationFrame(animateIdle);
     }
     if (spriteState.action === 'axe') {
-      cancelAnimationFrame(animationRef.current);
-      frameCounterRef.current = 0;
       setSpriteState((prev) => ({ ...prev, currentFrame: 0 }));
       animationRef.current = requestAnimationFrame(animateAxe);
     }
@@ -218,7 +214,6 @@ export const HeroSprite = ({ map, initialPosX, initialPosY }: IHeroSpriteProps) 
     <Layer>
       {spriteSheets && (
         <Image
-          ref={imageRef}
           image={spriteSheets[spriteState.action]}
           x={spriteState.x}
           y={spriteState.y}

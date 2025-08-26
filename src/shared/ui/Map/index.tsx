@@ -3,7 +3,7 @@ import { Stage, Layer, Image } from 'react-konva';
 
 import grass from 'src/assets/tiles/grass3.png';
 
-import { HeroSprite } from './frames';
+import { HeroSprite, TreeSprite } from './frames';
 import { useCreateMap } from './hooks';
 import styles from './styles.module.scss';
 
@@ -42,6 +42,11 @@ export const Map = () => {
             />
           ))}
         </Layer>
+        <TreeSprite
+          map={map}
+          initialPosX={200}
+          initialPosY={200}
+        />
         <HeroSprite
           map={map}
           initialPosX={100}
