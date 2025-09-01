@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Layer, Image } from 'react-konva';
+import type Konva from 'konva';
+import { useEffect, useRef, useState } from 'react';
+import { Layer, Sprite, Rect } from 'react-konva';
 import { useImage } from 'react-konva-utils';
 
+import type { TreeActionsType } from 'src/interfaces/animationInterface';
 import { animations } from 'src/shared/ui/Map/animations';
+// import { animations } from 'src/shared/ui/Map/animations';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
-interface SpriteState {
+interface IHitbox {
   x: number;
   y: number;
-  currentFrame: number;
-  action: 'treeHit';
-  play: boolean;
+  width: number;
+  height: number;
+  hitboxFill: string;
 }
 
 export interface ITreeSpriteProps {
@@ -19,71 +22,57 @@ export interface ITreeSpriteProps {
   initialPosY: number;
 }
 
-export const TreeSprite = ({ map, initialPosX, initialPosY }: ITreeSpriteProps) => {
-  const animationRef = useRef<number>(0);
-  const frameCounterRef = useRef<number>(0);
-
-  const { treeHit } = animations;
-
-  const [spriteState, setSpriteState] = useState<SpriteState>({
+export const TreeSprite = ({
+  // map,
+  initialPosX,
+  initialPosY,
+}: ITreeSpriteProps) => {
+  const animation = structuredClone(animations.tree);
+  const [hitbox, setHitbox] = useState<IHitbox>({
     x: initialPosX,
     y: initialPosY,
-    currentFrame: 0,
-    action: 'treeHit',
-    play: false,
+    width: 0,
+    height: 0,
+    hitboxFill: 'red',
   });
 
-  const [treeImage] = useImage(treeHit.spriteSheetUrl);
+  const [image] = useImage(animation?.spriteSheetUrl || '');
 
-  const currentAnimation = animations[spriteState.action];
-  const currentAnimationWidth = currentAnimation.frames[spriteState.currentFrame]?.width || 0;
-  const currentAnimationHeight = currentAnimation.frames[spriteState.currentFrame]?.height || 0;
+  const spriteRef = useRef<Konva.Sprite | null>(null);
+  const [currentAnimation, setCurrentAnimation] =
+    useState<TreeActionsType>('idle');
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  const animateTree = (): void => {
-    if (!spriteState.play) return;
+  const animate = () => {
+    if (spriteRef.current && !isPlaying) {
+      setIsPlaying(true);
+      setCurrentAnimation('hitted');
 
-    frameCounterRef.current += 1;
-    let isLastFrame = false;
+      const sprite = spriteRef.current;
+      sprite.animation('hitted');
+      sprite.start();
 
-    setSpriteState((prev) => {
-      // Меняем кадр только каждый N-ный раз
-      if (frameCounterRef.current % treeHit.frameDelay === 0) {
-        isLastFrame = prev.currentFrame >= treeHit.framesCount - 1;
-        if (isLastFrame) {
-          return {
-            ...prev,
-            play: false,
-            currentFrame: 0,
-          };
+      sprite.on('frameIndexChange.hitted', () => {
+        // Когда достигаем последнего кадра анимации hit
+        if (
+          sprite.frameIndex() ===
+          animation.hitboxFrames[currentAnimation].framesCount - 1
+        ) {
+          setTimeout(() => {
+            sprite.stop();
+            setCurrentAnimation('felled');
+            setIsPlaying(false);
+            sprite.off('.hitted');
+          }, 1000 / sprite.frameRate());
         }
-        return {
-          ...prev,
-          currentFrame: prev.currentFrame + 1,
-        };
-      }
-
-      return prev;
-    });
-
-    if (!isLastFrame) animationRef.current = requestAnimationFrame(animateTree);
+      });
+    }
   };
 
   useEffect(() => {
-    cancelAnimationFrame(animationRef.current);
-    frameCounterRef.current = 0;
-    animationRef.current = requestAnimationFrame(animateTree);
-    return () => {
-      cancelAnimationFrame(animationRef.current);
-    };
-  }, [spriteState.play]);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'e') {
-        setSpriteState((prev) => ({
-          ...prev,
-          play: true,
-        }));
+      if (e.key === 'f' && !isPlaying) {
+        animate();
       }
     };
 
@@ -92,34 +81,43 @@ export const TreeSprite = ({ map, initialPosX, initialPosY }: ITreeSpriteProps) 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isPlaying]);
 
-  const getSpriteCoord = useCallback(() => {
-    let nextX = 0;
-    for (let i = 0; i < spriteState.currentFrame; i++) {
-      nextX += currentAnimation.frames[i].width + currentAnimation.gap;
-    }
-    return {
-      x: nextX,
-      y: currentAnimation.spriteSheetHeight - currentAnimationHeight,
-    };
-  }, [spriteState.currentFrame, currentAnimation, currentAnimationHeight, currentAnimationWidth]);
+  useEffect(() => {
+    setHitbox((prev) => {
+      const hitboxFrames = animation.hitboxFrames;
+      return {
+        ...prev,
+        x: prev.x + hitboxFrames[currentAnimation].x,
+        y: prev.y + hitboxFrames[currentAnimation].y,
+        width: hitboxFrames[currentAnimation].width,
+        height: hitboxFrames[currentAnimation].height,
+      };
+    });
+  }, [currentAnimation]);
 
   return (
     <Layer>
-      {treeImage && (
-        <Image
-          image={treeImage}
-          x={spriteState.x}
-          y={spriteState.y}
-          width={currentAnimationWidth}
-          height={currentAnimationHeight}
-          crop={{
-            ...getSpriteCoord(),
-            width: currentAnimationWidth,
-            height: currentAnimationHeight,
-          }}
-        />
+      {image && (
+        <>
+          <Rect
+            x={hitbox.x}
+            y={hitbox.y}
+            width={hitbox.width}
+            height={hitbox.height}
+            fill={hitbox.hitboxFill}
+          />
+          <Sprite
+            ref={spriteRef}
+            x={hitbox.x}
+            y={hitbox.y}
+            image={image}
+            animation={currentAnimation}
+            animations={animation?.frames}
+            frameRate={animation.frameRate}
+            frameIndex={animation.frameIndex}
+          />
+        </>
       )}
     </Layer>
   );

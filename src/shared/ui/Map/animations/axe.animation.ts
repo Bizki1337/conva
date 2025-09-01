@@ -1,9 +1,8 @@
 import axeSpriteSheet from 'src/assets/hero/axe.png';
-import type { IAnimation } from 'src/interfaces';
 
 const DEFAULT_GAP = 5;
 
-export const axeAnimation: IAnimation = {
+export const axeAnimation = {
   gap: DEFAULT_GAP,
   framesCount: 9,
   frameDelay: 10,

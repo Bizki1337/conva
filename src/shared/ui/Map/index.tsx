@@ -44,8 +44,8 @@ export const Map = () => {
         </Layer>
         <TreeSprite
           map={map}
-          initialPosX={200}
-          initialPosY={200}
+          initialPosX={400}
+          initialPosY={400}
         />
         <HeroSprite
           map={map}

@@ -1,19 +1,17 @@
-import type { ActionType, IAnimation } from 'src/interfaces';
+import type { IAnimation } from 'src/interfaces';
+import type { SpritesType } from 'src/interfaces/animationInterface';
 
-import { axeAnimation } from './axe.animation';
-import { idleAnimation } from './idle.animation';
-import { runningAnimation } from './running.animation';
-import { treeHitAnimation } from './treeHit.animation';
-import { treeHitLeavesAnimation } from './treeHitLeaves.animation';
+import { heroAnimation } from './hero.animation';
+import { treeAnimation } from './tree.animation';
 
-type AnimationDictionary = Record<ActionType, IAnimation>;
+type AnimationDictionary = {
+  [K in SpritesType]: IAnimation<K>;
+};
 
+// Убрать peritial после заполнения всех спрайтов
 const animations: AnimationDictionary = {
-  idle: idleAnimation,
-  running: runningAnimation,
-  axe: axeAnimation,
-  treeHit: treeHitAnimation,
-  treeHitLeaves: treeHitLeavesAnimation,
+  tree: treeAnimation,
+  hero: heroAnimation,
 };
 
 export { animations };
