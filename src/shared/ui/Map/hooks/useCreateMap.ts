@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useImage } from 'react-konva-utils';
+
+import type { CollisionMapDataType } from 'src/interfaces';
 
 interface Tile {
   x: number;
@@ -42,6 +44,7 @@ export const useCreateMap = ({
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [map, setMap] = useState<IMap>(INITIAL_MAP_STATE);
   const [image] = useImage(tileImageUrl);
+  const collisionMapRef = useRef<CollisionMapDataType>({});
 
   const generateTiles = useCallback(() => {
     const newTiles: Tile[] = [];
@@ -83,6 +86,7 @@ export const useCreateMap = ({
     tiles,
     map,
     image,
+    collisionMapRef,
     generateTiles,
     clearTiles,
   };

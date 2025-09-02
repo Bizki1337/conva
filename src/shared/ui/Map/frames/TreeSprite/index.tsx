@@ -1,16 +1,26 @@
 import type KonvaType from 'konva';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Layer, Sprite, Rect, Group } from 'react-konva';
 
-import type { TreeActionsType } from 'src/interfaces/animationInterface';
+import type {
+  CollisionMapDataType,
+  TreeActionsType,
+} from 'src/interfaces/animationInterface';
 import { useSpriteAnimate } from 'src/shared/ui/Map/hooks';
 
 export interface ITreeSpriteProps {
+  id: number;
   initialPosX: number;
   initialPosY: number;
+  collisionMapRef: RefObject<CollisionMapDataType>;
 }
 
-export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
+export const TreeSprite = ({
+  id,
+  initialPosX,
+  initialPosY,
+  collisionMapRef,
+}: ITreeSpriteProps) => {
   const [currentAnimation, setCurrentAnimation] =
     useState<TreeActionsType>('idle');
 
@@ -41,6 +51,19 @@ export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
       x: initialPosX,
       y: initialPosY,
     });
+
+    // Заполнение карты коллизий при начальном рендере
+    const { width, height } = groupRef.current.size();
+    collisionMapRef.current = {
+      ...collisionMapRef.current,
+      [id]: {
+        ...collisionMapRef.current[id],
+        x: initialPosX,
+        y: initialPosY,
+        width,
+        height,
+      },
+    };
   }, [image, initialPosX, initialPosY]);
 
   useEffect(() => {
@@ -55,6 +78,34 @@ export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!groupRef.current) return;
+
+    const group = groupRef.current;
+
+    // Заполнение карты коллизий при изменении позиции
+    const handlePositionChange = () => {
+      const { x, y } = group.position();
+      const { width, height } = group.size();
+      collisionMapRef.current = {
+        ...collisionMapRef.current,
+        [id]: {
+          ...collisionMapRef.current[id],
+          x,
+          y,
+          width,
+          height,
+        },
+      };
+    };
+
+    group.on('xChange yChange', handlePositionChange);
+
+    return () => {
+      group.off('xChange yChange', handlePositionChange);
+    };
+  }, [image, currentAnimation]);
+
   return (
     <Layer>
       {image && (
@@ -62,12 +113,12 @@ export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
           ref={groupRef}
           width={animation.hitboxFrames[currentAnimation].width}
           height={animation.hitboxFrames[currentAnimation].height}>
-          <Rect // хитбокс
+          <Rect // Хитбокс
             width={animation.hitboxFrames[currentAnimation].width}
             height={animation.hitboxFrames[currentAnimation].height}
             fill={'red'}
           />
-          <Sprite // спрайт
+          <Sprite // Спрайт
             ref={spriteRef}
             image={image}
             animation={currentAnimation}

@@ -1,9 +1,21 @@
 import type KonvaType from 'konva';
 import Konva from 'konva';
-import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useRef,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 
-import type { DirectionType, HeroActionsType } from 'src/interfaces';
+import type {
+  CollisionMapDataType,
+  DirectionType,
+  HeroActionsType,
+} from 'src/interfaces';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
+
+import { checkCollision } from '../utils';
 
 const keyEvent: Record<string, DirectionType> = {
   KeyD: 'right',
@@ -20,14 +32,18 @@ interface IMoveState {
 interface IUseMoveProps {
   map: IMap;
   isImageExist: boolean;
-  offsetX: number;
+  hitboxWidth: number;
+  hitboxHeight: number;
+  collisionMapRef: RefObject<CollisionMapDataType>;
   setCurrentAnimation: Dispatch<SetStateAction<HeroActionsType>>;
 }
 
 export const useMove = ({
   map,
   isImageExist,
-  offsetX,
+  hitboxWidth,
+  hitboxHeight,
+  collisionMapRef,
   setCurrentAnimation,
 }: IUseMoveProps) => {
   const groupRef = useRef<KonvaType.Group | null>(null);
@@ -58,19 +74,49 @@ export const useMove = ({
       let nextY = currentY;
 
       if (directions.has('left')) {
-        nextX -= dx;
+        const isColliding = checkCollision(collisionMapRef.current, {
+          x: currentX - dx,
+          y: currentY,
+          width: hitboxWidth,
+          height: hitboxHeight,
+        });
+        if (!isColliding) nextX -= dx;
+
         // Поворачиваем группу влево
         groupRef.current.scaleX(-1);
-        groupRef.current.offsetX(offsetX);
+        groupRef.current.offsetX(hitboxWidth);
       }
       if (directions.has('right')) {
-        nextX += dx;
+        const isColliding = checkCollision(collisionMapRef.current, {
+          x: currentX + dx,
+          y: currentY,
+          width: hitboxWidth,
+          height: hitboxHeight,
+        });
+        if (!isColliding) nextX += dx;
+
         // Поворачиваем группу вправо
         groupRef.current.scaleX(1);
         groupRef.current.offsetX(0);
       }
-      if (directions.has('top')) nextY -= dy;
-      if (directions.has('bottom')) nextY += dy;
+      if (directions.has('top')) {
+        const isColliding = checkCollision(collisionMapRef.current, {
+          x: currentX,
+          y: currentY - dy,
+          width: hitboxWidth,
+          height: hitboxHeight,
+        });
+        if (!isColliding) nextY -= dy;
+      }
+      if (directions.has('bottom')) {
+        const isColliding = checkCollision(collisionMapRef.current, {
+          x: currentX,
+          y: currentY + dy,
+          width: hitboxWidth,
+          height: hitboxHeight,
+        });
+        if (!isColliding) nextY += dy;
+      }
 
       // Границы карты
       const { width: mapWidth, height: mapHeight } = map;

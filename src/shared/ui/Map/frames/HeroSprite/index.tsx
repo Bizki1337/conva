@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { Layer, Rect, Sprite, Group } from 'react-konva';
 
-import type { HeroActionsType } from 'src/interfaces';
+import type { CollisionMapDataType, HeroActionsType } from 'src/interfaces';
 import { useSpriteAnimate } from 'src/shared/ui/Map/hooks';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
@@ -9,9 +9,10 @@ import { useMove } from './hooks';
 
 export interface IHeroSpriteProps {
   map: IMap;
+  collisionMapRef: RefObject<CollisionMapDataType>;
 }
 
-export const HeroSprite = ({ map }: IHeroSpriteProps) => {
+export const HeroSprite = ({ map, collisionMapRef }: IHeroSpriteProps) => {
   const [currentAnimation, setCurrentAnimation] =
     useState<HeroActionsType>('idle');
 
@@ -28,7 +29,9 @@ export const HeroSprite = ({ map }: IHeroSpriteProps) => {
   const { groupRef } = useMove({
     map,
     isImageExist: !!image,
-    offsetX: animation.hitboxFrames[currentAnimation].width,
+    collisionMapRef,
+    hitboxWidth: animation.hitboxFrames[currentAnimation].width,
+    hitboxHeight: animation.hitboxFrames[currentAnimation].height,
     setCurrentAnimation,
   });
 
@@ -51,12 +54,12 @@ export const HeroSprite = ({ map }: IHeroSpriteProps) => {
           ref={groupRef}
           width={animation.hitboxFrames[currentAnimation].width}
           height={animation.hitboxFrames[currentAnimation].height}>
-          <Rect // хитбокс
+          <Rect // Хитбокс
             width={animation.hitboxFrames[currentAnimation].width}
             height={animation.hitboxFrames[currentAnimation].height}
             fill={'red'}
           />
-          <Sprite // спрайт
+          <Sprite // Спрайт
             ref={spriteRef}
             image={image}
             animation={currentAnimation}

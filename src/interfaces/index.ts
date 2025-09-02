@@ -1,18 +1,17 @@
 import type {
   IAnimation,
-  IFrame,
   DirectionType,
   HeroActionsType,
   ActionMap,
+  CollisionMapDataType,
+  ICollision,
 } from './animationInterface';
-import type { HexTagType, IHex } from './mapInterfaces';
 
 export type {
-  HexTagType,
-  IHex,
   IAnimation,
-  IFrame,
   DirectionType,
   HeroActionsType,
   ActionMap,
+  CollisionMapDataType,
+  ICollision,
 };
