@@ -20,6 +20,18 @@ export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
   const { image, spriteRef, animation } = useSpriteAnimate({
     currentAnimation,
     sprite: 'tree',
+    afterAnimation: () => {
+      setCurrentAnimation('felled');
+      if (!groupRef.current) return;
+      const { x, y } = groupRef.current.position();
+      groupRef.current?.setPosition({
+        x: x + 8,
+        y:
+          y +
+          (animation.hitboxFrames.idle.height -
+            animation.hitboxFrames.felled.height),
+      });
+    },
   });
 
   useEffect(() => {

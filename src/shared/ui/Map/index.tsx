@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Stage, Layer, Image, Rect } from 'react-konva';
+import { Stage, Layer, Image } from 'react-konva';
 
 import grass from 'src/assets/tiles/grass3.png';
 

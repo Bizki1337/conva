@@ -32,7 +32,8 @@ export const heroAnimation: IAnimation<'hero'> = {
       height: 64,
       x: 0,
       y: 0,
-      framesCount: 1,
+      framesCount: 9,
+      correctionY: [0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
   },
   // prettier-ignore
@@ -50,17 +51,26 @@ export const heroAnimation: IAnimation<'hero'> = {
       376, 0, 42, 64,    // frame 9
     ],
     running: [
-      0, 2 + 69, 42, 62,      // frame 1
-      47, 9 + 69, 42, 55,      // frame 2
-      94, 0 + 69, 42, 64,      // frame 3
-      141, 2 + 69, 42, 62,      // frame 4
-      188, 2 + 69, 43, 62,      // frame 5
-      236, 9 + 69, 42, 55,      // frame 6
-      283, 0 + 69, 42, 64,      // frame 7
-      330, 2 + 69, 42, 62,      // frame 8
+      0, 71, 42, 62,      // frame 1
+      47, 78, 42, 55,      // frame 2
+      94, 69, 42, 64,      // frame 3
+      141, 71, 42, 62,      // frame 4
+      188, 71, 43, 62,      // frame 5
+      236, 78, 42, 55,      // frame 6
+      283, 69, 42, 64,      // frame 7
+      330, 71, 42, 62,      // frame 8
     ],
     axe: [
-      0, 243, 40, 35
+      // y: 138 === 0
+      0, 159, 57, 71,      // frame 1
+      62, 159, 68, 71,      // frame 2
+      135, 166, 92, 64,      // frame 3
+      232, 166, 89, 64,      // frame 4
+      326, 159, 88, 71,      // frame 5
+      419, 138, 142, 92,      // frame 6
+      566, 144, 156, 86,      // frame 7
+      727, 145, 167, 85,      // frame 8
+      899, 138, 166, 92,      // frame 9
     ]
   },
 };

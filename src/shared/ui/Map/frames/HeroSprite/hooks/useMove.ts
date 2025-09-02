@@ -20,12 +20,14 @@ interface IMoveState {
 interface IUseMoveProps {
   map: IMap;
   isImageExist: boolean;
+  offsetX: number;
   setCurrentAnimation: Dispatch<SetStateAction<HeroActionsType>>;
 }
 
 export const useMove = ({
   map,
   isImageExist,
+  offsetX,
   setCurrentAnimation,
 }: IUseMoveProps) => {
   const groupRef = useRef<KonvaType.Group | null>(null);
@@ -55,8 +57,18 @@ export const useMove = ({
       let nextX = currentX;
       let nextY = currentY;
 
-      if (directions.has('left')) nextX -= dx;
-      if (directions.has('right')) nextX += dx;
+      if (directions.has('left')) {
+        nextX -= dx;
+        // Поворачиваем группу влево
+        groupRef.current.scaleX(-1);
+        groupRef.current.offsetX(offsetX);
+      }
+      if (directions.has('right')) {
+        nextX += dx;
+        // Поворачиваем группу вправо
+        groupRef.current.scaleX(1);
+        groupRef.current.offsetX(0);
+      }
       if (directions.has('top')) nextY -= dy;
       if (directions.has('bottom')) nextY += dy;
 
@@ -66,8 +78,6 @@ export const useMove = ({
       nextY = Math.max(0, Math.min(mapHeight - 64, nextY));
 
       groupRef.current.position({ x: nextX, y: nextY });
-
-      // console.log('position:', nextX, nextY, 'map size:', mapWidth, mapHeight);
     }, layer);
 
     const handleKeyDown = (e: KeyboardEvent) => {

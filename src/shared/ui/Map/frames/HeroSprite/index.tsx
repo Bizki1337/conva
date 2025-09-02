@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layer, Rect, Sprite, Group } from 'react-konva';
 
 import type { HeroActionsType } from 'src/interfaces';
@@ -19,14 +19,30 @@ export const HeroSprite = ({ map }: IHeroSpriteProps) => {
   const { image, spriteRef, animation } = useSpriteAnimate({
     currentAnimation,
     sprite: 'hero',
+    afterAnimation: () => {
+      setCurrentAnimation('idle');
+    },
   });
 
   /* Отвечает за передвижение группы */
   const { groupRef } = useMove({
     map,
     isImageExist: !!image,
+    offsetX: animation.hitboxFrames[currentAnimation].width,
     setCurrentAnimation,
   });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.code === 'KeyF') setCurrentAnimation('axe');
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <Layer>
