@@ -8,7 +8,6 @@ type AnimationDictionary = {
   [K in SpritesType]: IAnimation<K>;
 };
 
-// Убрать peritial после заполнения всех спрайтов
 const animations: AnimationDictionary = {
   tree: treeAnimation,
   hero: heroAnimation,

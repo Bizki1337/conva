@@ -1,79 +1,39 @@
-import type Konva from 'konva';
+import type KonvaType from 'konva';
 import { useEffect, useRef, useState } from 'react';
-import { Layer, Sprite, Rect } from 'react-konva';
-import { useImage } from 'react-konva-utils';
+import { Layer, Sprite, Rect, Group } from 'react-konva';
 
 import type { TreeActionsType } from 'src/interfaces/animationInterface';
-import { animations } from 'src/shared/ui/Map/animations';
-// import { animations } from 'src/shared/ui/Map/animations';
-import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
-
-interface IHitbox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  hitboxFill: string;
-}
+import { useSpriteAnimate } from 'src/shared/ui/Map/hooks';
 
 export interface ITreeSpriteProps {
-  map: IMap;
   initialPosX: number;
   initialPosY: number;
 }
 
-export const TreeSprite = ({
-  // map,
-  initialPosX,
-  initialPosY,
-}: ITreeSpriteProps) => {
-  const animation = structuredClone(animations.tree);
-  const [hitbox, setHitbox] = useState<IHitbox>({
-    x: initialPosX,
-    y: initialPosY,
-    width: 0,
-    height: 0,
-    hitboxFill: 'red',
-  });
-
-  const [image] = useImage(animation?.spriteSheetUrl || '');
-
-  const spriteRef = useRef<Konva.Sprite | null>(null);
+export const TreeSprite = ({ initialPosX, initialPosY }: ITreeSpriteProps) => {
   const [currentAnimation, setCurrentAnimation] =
     useState<TreeActionsType>('idle');
-  const [isPlaying, setIsPlaying] = useState(false);
 
-  const animate = () => {
-    if (spriteRef.current && !isPlaying) {
-      setIsPlaying(true);
-      setCurrentAnimation('hitted');
+  const groupRef = useRef<KonvaType.Group | null>(null);
 
-      const sprite = spriteRef.current;
-      sprite.animation('hitted');
-      sprite.start();
+  /* Отвечает за анимацию (анимация !== движение) */
+  const { image, spriteRef, animation } = useSpriteAnimate({
+    currentAnimation,
+    sprite: 'tree',
+  });
 
-      sprite.on('frameIndexChange.hitted', () => {
-        // Когда достигаем последнего кадра анимации hit
-        if (
-          sprite.frameIndex() ===
-          animation.hitboxFrames[currentAnimation].framesCount - 1
-        ) {
-          setTimeout(() => {
-            sprite.stop();
-            setCurrentAnimation('felled');
-            setIsPlaying(false);
-            sprite.off('.hitted');
-          }, 1000 / sprite.frameRate());
-        }
-      });
-    }
-  };
+  useEffect(() => {
+    if (!groupRef.current) return;
+
+    groupRef.current.setPosition({
+      x: initialPosX,
+      y: initialPosY,
+    });
+  }, [image, initialPosX, initialPosY]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'f' && !isPlaying) {
-        animate();
-      }
+      if (e.code === 'KeyF') setCurrentAnimation('hitted');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -81,43 +41,29 @@ export const TreeSprite = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isPlaying]);
-
-  useEffect(() => {
-    setHitbox((prev) => {
-      const hitboxFrames = animation.hitboxFrames;
-      return {
-        ...prev,
-        x: prev.x + hitboxFrames[currentAnimation].x,
-        y: prev.y + hitboxFrames[currentAnimation].y,
-        width: hitboxFrames[currentAnimation].width,
-        height: hitboxFrames[currentAnimation].height,
-      };
-    });
-  }, [currentAnimation]);
+  }, []);
 
   return (
     <Layer>
       {image && (
-        <>
-          <Rect
-            x={hitbox.x}
-            y={hitbox.y}
-            width={hitbox.width}
-            height={hitbox.height}
-            fill={hitbox.hitboxFill}
+        <Group
+          ref={groupRef}
+          width={animation.hitboxFrames[currentAnimation].width}
+          height={animation.hitboxFrames[currentAnimation].height}>
+          <Rect // хитбокс
+            width={animation.hitboxFrames[currentAnimation].width}
+            height={animation.hitboxFrames[currentAnimation].height}
+            fill={'red'}
           />
-          <Sprite
+          <Sprite // спрайт
             ref={spriteRef}
-            x={hitbox.x}
-            y={hitbox.y}
             image={image}
             animation={currentAnimation}
-            animations={animation?.frames}
+            animations={animation.frames}
             frameRate={animation.frameRate}
             frameIndex={animation.frameIndex}
           />
-        </>
+        </Group>
       )}
     </Layer>
   );

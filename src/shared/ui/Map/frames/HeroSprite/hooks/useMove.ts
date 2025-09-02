@@ -3,6 +3,7 @@ import Konva from 'konva';
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 
 import type { DirectionType, HeroActionsType } from 'src/interfaces';
+import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
 const keyEvent: Record<string, DirectionType> = {
   KeyD: 'right',
@@ -17,11 +18,13 @@ interface IMoveState {
 }
 
 interface IUseMoveProps {
+  map: IMap;
   isImageExist: boolean;
   setCurrentAnimation: Dispatch<SetStateAction<HeroActionsType>>;
 }
 
 export const useMove = ({
+  map,
   isImageExist,
   setCurrentAnimation,
 }: IUseMoveProps) => {
@@ -38,28 +41,33 @@ export const useMove = ({
     const layer = groupRef.current.getLayer();
 
     animRef.current = new Konva.Animation((frame) => {
+      if (!frame || !groupRef.current) return;
+
       const speed = 250;
-      const posX = groupRef.current?.x();
-      const posY = groupRef.current?.y();
-      if (!frame || !posX || !posY) return;
+      const currentX = groupRef.current.x();
+      const currentY = groupRef.current.y();
 
       const dx = (speed * frame.timeDiff) / 1000;
       const dy = (speed * frame.timeDiff) / 1000;
 
       const directions = new Set(moveStateRef.current.directions);
 
-      let nextPosX = posX;
-      let nextPosY = posY;
+      let nextX = currentX;
+      let nextY = currentY;
 
-      if (directions.has('left')) nextPosX -= dx;
-      if (directions.has('right')) nextPosX += dx;
-      if (directions.has('top')) nextPosY -= dy;
-      if (directions.has('bottom')) nextPosY += dy;
+      if (directions.has('left')) nextX -= dx;
+      if (directions.has('right')) nextX += dx;
+      if (directions.has('top')) nextY -= dy;
+      if (directions.has('bottom')) nextY += dy;
 
-      groupRef.current?.position({
-        x: nextPosX,
-        y: nextPosY,
-      });
+      // Границы карты
+      const { width: mapWidth, height: mapHeight } = map;
+      nextX = Math.max(0, Math.min(mapWidth - 42, nextX));
+      nextY = Math.max(0, Math.min(mapHeight - 64, nextY));
+
+      groupRef.current.position({ x: nextX, y: nextY });
+
+      // console.log('position:', nextX, nextY, 'map size:', mapWidth, mapHeight);
     }, layer);
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -84,8 +92,6 @@ export const useMove = ({
       nextDirections.delete(keyEvent[e.code]);
 
       const isNotEmpty = !!nextDirections.size;
-
-      console.log('isNotEmpty', isNotEmpty);
 
       moveStateRef.current = {
         directions: nextDirections,

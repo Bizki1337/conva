@@ -1,34 +1,29 @@
+import { useState } from 'react';
 import { Layer, Rect, Sprite, Group } from 'react-konva';
 
+import type { HeroActionsType } from 'src/interfaces';
+import { useSpriteAnimate } from 'src/shared/ui/Map/hooks';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
-import { useMove, useSpriteAnimate } from './hooks';
+import { useMove } from './hooks';
 
 export interface IHeroSpriteProps {
   map: IMap;
-  initialPosX: number;
-  initialPosY: number;
 }
 
-export const HeroSprite = ({
-  // map,
-  initialPosX,
-  initialPosY,
-}: IHeroSpriteProps) => {
-  const {
-    image,
-    hitbox,
-    spriteRef,
-    spriteState,
+export const HeroSprite = ({ map }: IHeroSpriteProps) => {
+  const [currentAnimation, setCurrentAnimation] =
+    useState<HeroActionsType>('idle');
+
+  /* Отвечает за анимацию (анимация !== движение) */
+  const { image, spriteRef, animation } = useSpriteAnimate({
     currentAnimation,
-    animation,
-    setCurrentAnimation,
-  } = useSpriteAnimate({
-    initialPosX,
-    initialPosY,
+    sprite: 'hero',
   });
 
+  /* Отвечает за передвижение группы */
   const { groupRef } = useMove({
+    map,
     isImageExist: !!image,
     setCurrentAnimation,
   });
@@ -36,30 +31,24 @@ export const HeroSprite = ({
   return (
     <Layer>
       {image && (
-        <>
-          <Group
-            ref={groupRef}
-            x={initialPosX}
-            y={initialPosY}>
-            <Rect
-              x={hitbox.x}
-              y={hitbox.y}
-              width={hitbox.width}
-              height={hitbox.height}
-              fill={hitbox.hitboxFill}
-            />
-            <Sprite
-              ref={spriteRef}
-              x={spriteState.x}
-              y={spriteState.y}
-              image={image}
-              animation={currentAnimation}
-              animations={animation.frames}
-              frameRate={animation.frameRate}
-              frameIndex={animation.frameIndex}
-            />
-          </Group>
-        </>
+        <Group
+          ref={groupRef}
+          width={animation.hitboxFrames[currentAnimation].width}
+          height={animation.hitboxFrames[currentAnimation].height}>
+          <Rect // хитбокс
+            width={animation.hitboxFrames[currentAnimation].width}
+            height={animation.hitboxFrames[currentAnimation].height}
+            fill={'red'}
+          />
+          <Sprite // спрайт
+            ref={spriteRef}
+            image={image}
+            animation={currentAnimation}
+            animations={animation.frames}
+            frameRate={animation.frameRate}
+            frameIndex={animation.frameIndex}
+          />
+        </Group>
       )}
     </Layer>
   );

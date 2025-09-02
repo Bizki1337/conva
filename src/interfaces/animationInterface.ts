@@ -22,7 +22,7 @@ export type TreeActionsType = Extract<
 
 export type SpritesType = 'hero' | 'tree';
 
-type ActionMap<T extends SpritesType> = {
+export type ActionMap<T extends SpritesType> = {
   hero: HeroActionsType;
   tree: TreeActionsType;
 }[T];
