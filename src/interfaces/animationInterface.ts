@@ -30,6 +30,24 @@ export type ActionMap<T extends SpritesType> = {
   tree: TreeActionsType;
 }[T];
 
+export interface IInteractionArea {
+  /*
+    Координаты должны быть относительно группы, НЕ холста
+    Пример:
+      Координаты дерева: 100, 200
+      Координаты фигуры взаимодействия: -20, 0 
+      (что значит, фигура взаимодействия будет на 20 пикселей левее, чем спрайт) 
+  */
+  x: number;
+  y: number;
+  /*
+    Размеры должны быть больше размеров спрайта,
+    так как коллизия не даст "наступить" на фигуру взаимодействия
+  */
+  width: number;
+  height: number;
+}
+
 // Объект коллизий
 export interface ICollision {
   id: number;
@@ -38,6 +56,7 @@ export interface ICollision {
   width: number;
   height: number;
   type: LandscapeSpritesType;
+  interactionArea: IInteractionArea;
 }
 
 // Карта коллизий

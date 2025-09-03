@@ -13,9 +13,10 @@ import type {
   DirectionType,
   HeroActionsType,
 } from 'src/interfaces';
+import type { IMetaData } from 'src/shared/ui/Map';
 import type { IMap } from 'src/shared/ui/Map/hooks/useCreateMap';
 
-import { checkCollision } from '../utils';
+import { checkCoverageAreas } from '../utils';
 
 const keyEvent: Record<string, DirectionType> = {
   KeyD: 'right',
@@ -35,6 +36,8 @@ interface IUseMoveProps {
   hitboxWidth: number;
   hitboxHeight: number;
   collisionMapRef: RefObject<CollisionMapDataType>;
+  metaDataRef: RefObject<IMetaData>;
+  uiImageRef: RefObject<KonvaType.Image | null>;
   setCurrentAnimation: Dispatch<SetStateAction<HeroActionsType>>;
 }
 
@@ -44,6 +47,8 @@ export const useMove = ({
   hitboxWidth,
   hitboxHeight,
   collisionMapRef,
+  metaDataRef,
+  uiImageRef,
   setCurrentAnimation,
 }: IUseMoveProps) => {
   const groupRef = useRef<KonvaType.Group | null>(null);
@@ -73,49 +78,110 @@ export const useMove = ({
       let nextX = currentX;
       let nextY = currentY;
 
+      const collisions = Object.values(collisionMapRef.current);
+      /*
+        interactionArea имеет координаты относительно группы, НЕ холста
+        Поэтому мы должны спозиционировать фигуру взаимодействия относительно холста
+      */
+      const interactionAreas = collisions.map((collision) => ({
+        ...collision.interactionArea,
+        x: collision.x + collision.interactionArea.x,
+        y: collision.y + collision.interactionArea.y,
+        id: collision.id,
+      }));
+
       if (directions.has('left')) {
-        const isColliding = checkCollision(collisionMapRef.current, {
+        const nextSpriteData = {
           x: currentX - dx,
           y: currentY,
           width: hitboxWidth,
           height: hitboxHeight,
+        };
+        const { collidingId, interactionId } = checkCoverageAreas({
+          collisions,
+          interactionAreas,
+          target: nextSpriteData,
         });
-        if (!isColliding) nextX -= dx;
+
+        if (interactionId === null) uiImageRef.current?.hide();
+        if (interactionId !== null) uiImageRef.current?.show();
+
+        metaDataRef.current = {
+          canAction: interactionId !== null,
+          interactionId,
+        };
+        if (collidingId === null) nextX -= dx;
 
         // Поворачиваем группу влево
         groupRef.current.scaleX(-1);
         groupRef.current.offsetX(hitboxWidth);
       }
       if (directions.has('right')) {
-        const isColliding = checkCollision(collisionMapRef.current, {
+        const nextSpriteData = {
           x: currentX + dx,
           y: currentY,
           width: hitboxWidth,
           height: hitboxHeight,
+        };
+        const { collidingId, interactionId } = checkCoverageAreas({
+          collisions,
+          interactionAreas,
+          target: nextSpriteData,
         });
-        if (!isColliding) nextX += dx;
+
+        if (interactionId === null) uiImageRef.current?.hide();
+        if (interactionId !== null) uiImageRef.current?.show();
+        metaDataRef.current = {
+          canAction: interactionId !== null,
+          interactionId,
+        };
+        if (collidingId === null) nextX += dx;
 
         // Поворачиваем группу вправо
         groupRef.current.scaleX(1);
         groupRef.current.offsetX(0);
       }
       if (directions.has('top')) {
-        const isColliding = checkCollision(collisionMapRef.current, {
+        const nextSpriteData = {
           x: currentX,
           y: currentY - dy,
           width: hitboxWidth,
           height: hitboxHeight,
+        };
+        const { collidingId, interactionId } = checkCoverageAreas({
+          collisions,
+          interactionAreas,
+          target: nextSpriteData,
         });
-        if (!isColliding) nextY -= dy;
+
+        if (interactionId === null) uiImageRef.current?.hide();
+        if (interactionId !== null) uiImageRef.current?.show();
+        metaDataRef.current = {
+          canAction: interactionId !== null,
+          interactionId,
+        };
+        if (collidingId === null) nextY -= dy;
       }
       if (directions.has('bottom')) {
-        const isColliding = checkCollision(collisionMapRef.current, {
+        const nextSpriteData = {
           x: currentX,
           y: currentY + dy,
           width: hitboxWidth,
           height: hitboxHeight,
+        };
+        const { collidingId, interactionId } = checkCoverageAreas({
+          collisions,
+          interactionAreas,
+          target: nextSpriteData,
         });
-        if (!isColliding) nextY += dy;
+
+        if (interactionId === null) uiImageRef.current?.hide();
+        if (interactionId !== null) uiImageRef.current?.show();
+        metaDataRef.current = {
+          canAction: interactionId !== null,
+          interactionId,
+        };
+        if (collidingId === null) nextY += dy;
       }
 
       // Границы карты

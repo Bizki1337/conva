@@ -5,6 +5,8 @@ import type {
   ActionMap,
   CollisionMapDataType,
   ICollision,
+  IInteractionArea,
+  TreeActionsType,
 } from './animationInterface';
 
 export type {
@@ -14,4 +16,6 @@ export type {
   ActionMap,
   CollisionMapDataType,
   ICollision,
+  IInteractionArea,
+  TreeActionsType,
 };

@@ -1,19 +1,10 @@
-import type { CollisionMapDataType } from 'src/interfaces';
-
-interface ITarget {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import type { IData, TargetType } from './checkCoverageAreas';
 
 export const checkCollision = (
-  collisionMap: CollisionMapDataType,
-  target: ITarget,
-): boolean => {
-  const collisions = Object.values(collisionMap);
-
-  return collisions.some((collision) => {
+  collisions: IData[],
+  target: TargetType,
+): number | null => {
+  const findedCollision = collisions.find((collision) => {
     // Проверяем пересечение по оси X
     const intersectX =
       collision.x < target.x + target.width &&
@@ -27,4 +18,6 @@ export const checkCollision = (
     // Если пересекаются по обеим осям - значит прямоугольники пересекаются
     return intersectX && intersectY;
   });
+
+  return findedCollision?.id ?? null;
 };

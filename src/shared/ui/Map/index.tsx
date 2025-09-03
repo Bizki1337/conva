@@ -1,4 +1,4 @@
-import { useEffect, type ComponentType } from 'react';
+import { useEffect, useRef, type ComponentType } from 'react';
 import { Stage, Layer, Image } from 'react-konva';
 
 import grass from 'src/assets/tiles/grass3.png';
@@ -12,6 +12,11 @@ import styles from './styles.module.scss';
 
 const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 800;
+
+export interface IMetaData {
+  canAction: boolean; // можем ли герою взаимодействовать
+  interactionId: number | null; // id спрайта, с которым взаимодействуем
+}
 
 type LandscapeComponentType = Record<
   LandscapeSpritesType,
@@ -31,6 +36,12 @@ export const Map = () => {
     width: MAP_WIDTH,
     height: MAP_HEIGHT,
     tileImageUrl: grass,
+  });
+
+  // Хранится дополнительная информация о герое
+  const metaDataRef = useRef<IMetaData>({
+    canAction: false,
+    interactionId: null,
   });
 
   useEffect(() => {
@@ -60,7 +71,7 @@ export const Map = () => {
           )}
         </Layer>
         {mapObjects.map((object) => {
-          // Отрисовка объекта ландшафта
+          // Отрисовка объектов ландшафта
           const LandscapeComponent = getLandscapeComponent(object.type);
 
           if (!LandscapeComponent) return null;
@@ -72,10 +83,12 @@ export const Map = () => {
               initialPosX={object.x}
               initialPosY={object.y}
               collisionMapRef={collisionMapRef}
+              metaDataRef={metaDataRef}
             />
           );
         })}
         <HeroSprite // Отрисовка героя
+          metaDataRef={metaDataRef}
           map={map}
           collisionMapRef={collisionMapRef}
         />

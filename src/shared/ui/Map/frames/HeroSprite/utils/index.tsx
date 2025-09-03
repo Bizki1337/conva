@@ -1,3 +1,4 @@
 import { checkCollision } from './checkCollision';
+import { checkCoverageAreas } from './checkCoverageAreas';
 
-export { checkCollision };
+export { checkCollision, checkCoverageAreas };
