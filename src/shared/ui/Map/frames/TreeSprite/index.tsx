@@ -1,21 +1,13 @@
 import type KonvaType from 'konva';
-import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Layer, Sprite, Rect, Group } from 'react-konva';
+import { useEffect, useRef, useState } from 'react';
+import { Sprite, Rect, Group } from 'react-konva';
 
-import type { CollisionMapDataType, TreeActionsType } from 'src/interfaces';
+import type { TreeActionsType } from 'src/interfaces';
 import { useSpriteAnimate } from 'src/shared/ui/Map/hooks';
 
-import type { IMetaData } from '../../index';
+import type { ISpriteProps } from '../../index';
 
 import { createInteractionAreaData } from './utils';
-
-export interface ITreeSpriteProps {
-  id: number;
-  initialPosX: number;
-  initialPosY: number;
-  metaDataRef: RefObject<IMetaData>;
-  collisionMapRef: RefObject<CollisionMapDataType>;
-}
 
 export const TreeSprite = ({
   id,
@@ -23,7 +15,7 @@ export const TreeSprite = ({
   initialPosY,
   metaDataRef,
   collisionMapRef,
-}: ITreeSpriteProps) => {
+}: ISpriteProps) => {
   const [currentAnimation, setCurrentAnimation] =
     useState<TreeActionsType>('idle');
 
@@ -91,7 +83,9 @@ export const TreeSprite = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       const canAction =
-        metaDataRef.current.interactionId === id && currentAnimation === 'idle';
+        metaDataRef?.current.interactionId === id &&
+        currentAnimation === 'idle';
+
       if (e.code === 'KeyF' && canAction) {
         setTimeout(() => {
           setCurrentAnimation('hitted');
@@ -152,34 +146,32 @@ export const TreeSprite = ({
     };
   }, [image, currentAnimation]);
 
+  if (!image) return null;
+
   return (
-    <Layer>
-      {image && (
-        <Group
-          ref={groupRef}
-          width={animation.hitboxFrames[currentAnimation].width}
-          height={animation.hitboxFrames[currentAnimation].height}>
-          <Rect // Площадь возможного взаимодействия с объектом
-            ref={interactionAreaRef}
-            width={animation.hitboxFrames[currentAnimation].width}
-            height={animation.hitboxFrames[currentAnimation].height}
-            // fill={'purple'}
-          />
-          <Rect // Хитбокс
-            width={animation.hitboxFrames[currentAnimation].width}
-            height={animation.hitboxFrames[currentAnimation].height}
-            // fill={'red'}
-          />
-          <Sprite // Спрайт
-            ref={spriteRef}
-            image={image}
-            animation={currentAnimation}
-            animations={animation.frames}
-            frameRate={animation.frameRate}
-            frameIndex={animation.frameIndex}
-          />
-        </Group>
-      )}
-    </Layer>
+    <Group
+      ref={groupRef}
+      width={animation.hitboxFrames[currentAnimation].width}
+      height={animation.hitboxFrames[currentAnimation].height}>
+      <Rect // Площадь возможного взаимодействия с объектом
+        ref={interactionAreaRef}
+        width={animation.hitboxFrames[currentAnimation].width}
+        height={animation.hitboxFrames[currentAnimation].height}
+        // fill={'purple'}
+      />
+      <Rect // Хитбокс
+        width={animation.hitboxFrames[currentAnimation].width}
+        height={animation.hitboxFrames[currentAnimation].height}
+        // fill={'red'}
+      />
+      <Sprite // Спрайт
+        ref={spriteRef}
+        image={image}
+        animation={currentAnimation}
+        animations={animation.frames}
+        frameRate={animation.frameRate}
+        frameIndex={animation.frameIndex}
+      />
+    </Group>
   );
 };

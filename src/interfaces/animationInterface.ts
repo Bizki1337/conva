@@ -21,8 +21,18 @@ export type TreeActionsType = Extract<
 // Все доступные спрайтшиты
 export type SpritesType = 'hero' | 'tree';
 
-// Все доступные спрайтшиты, которые относятся к элементам ландшафта
-export type LandscapeSpritesType = Extract<SpritesType, 'tree'>;
+// Всё доступные статичные спрайты
+export type StaticSprites =
+  | 'anvil'
+  | 'fence_horizontal'
+  | 'fence_vertical'
+  | 'forge'
+  | 'house'
+  | 'rock'
+  | 'trough';
+
+// Все доступные спрайтшиты и статичный спрайты, которые относятся к элементам ландшафта
+export type LandscapeSpritesType = Extract<SpritesType, 'tree'> | StaticSprites;
 
 // Все доступные анимации, собранные в словарь и разделённые по спрайтшитам
 export type ActionMap<T extends SpritesType> = {
@@ -50,7 +60,7 @@ export interface IInteractionArea {
 
 // Объект коллизий
 export interface ICollision {
-  id: number;
+  id: string;
   x: number;
   y: number;
   width: number;
@@ -60,7 +70,7 @@ export interface ICollision {
 }
 
 // Карта коллизий
-export type CollisionMapDataType = Record<number, ICollision>;
+export type CollisionMapDataType = Record<string, ICollision>;
 
 // Объект хитбокса
 export interface IHitboxState {

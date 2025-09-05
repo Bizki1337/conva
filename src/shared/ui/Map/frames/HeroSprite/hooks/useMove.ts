@@ -38,6 +38,8 @@ interface IUseMoveProps {
   collisionMapRef: RefObject<CollisionMapDataType>;
   metaDataRef: RefObject<IMetaData>;
   uiImageRef: RefObject<KonvaType.Image | null>;
+  initialPosX: number;
+  initialPosY: number;
   setCurrentAnimation: Dispatch<SetStateAction<HeroActionsType>>;
 }
 
@@ -49,6 +51,8 @@ export const useMove = ({
   collisionMapRef,
   metaDataRef,
   uiImageRef,
+  initialPosX,
+  initialPosY,
   setCurrentAnimation,
 }: IUseMoveProps) => {
   const groupRef = useRef<KonvaType.Group | null>(null);
@@ -62,6 +66,11 @@ export const useMove = ({
     if (!groupRef.current) return;
 
     const layer = groupRef.current.getLayer();
+
+    groupRef.current.setPosition({
+      x: initialPosX,
+      y: initialPosY,
+    });
 
     animRef.current = new Konva.Animation((frame) => {
       if (!frame || !groupRef.current) return;
@@ -83,12 +92,14 @@ export const useMove = ({
         interactionArea имеет координаты относительно группы, НЕ холста
         Поэтому мы должны спозиционировать фигуру взаимодействия относительно холста
       */
-      const interactionAreas = collisions.map((collision) => ({
-        ...collision.interactionArea,
-        x: collision.x + collision.interactionArea.x,
-        y: collision.y + collision.interactionArea.y,
-        id: collision.id,
-      }));
+      const interactionAreas = collisions
+        .filter((collision) => collision.interactionArea)
+        .map((collision) => ({
+          ...collision.interactionArea,
+          x: collision.x + collision.interactionArea.x,
+          y: collision.y + collision.interactionArea.y,
+          id: collision.id,
+        }));
 
       if (directions.has('left')) {
         const nextSpriteData = {

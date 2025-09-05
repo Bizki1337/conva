@@ -1,6 +1,6 @@
 import type KonvaType from 'konva';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Layer, Rect, Sprite, Group, Image } from 'react-konva';
+import { Rect, Sprite, Group, Image } from 'react-konva';
 import { useImage } from 'react-konva-utils';
 
 import axeImageUrl from 'src/assets/ui/axe_ui.png';
@@ -16,12 +16,16 @@ export interface IHeroSpriteProps {
   map: IMap;
   collisionMapRef: RefObject<CollisionMapDataType>;
   metaDataRef: RefObject<IMetaData>;
+  initialPosX?: number;
+  initialPosY?: number;
 }
 
 export const HeroSprite = ({
   map,
   metaDataRef,
   collisionMapRef,
+  initialPosX = 0,
+  initialPosY = 0,
 }: IHeroSpriteProps) => {
   const [currentAnimation, setCurrentAnimation] =
     useState<HeroActionsType>('idle');
@@ -48,6 +52,8 @@ export const HeroSprite = ({
     uiImageRef,
     hitboxWidth: animation.hitboxFrames[currentAnimation].width,
     hitboxHeight: animation.hitboxFrames[currentAnimation].height,
+    initialPosX,
+    initialPosY,
     setCurrentAnimation,
   });
 
@@ -80,34 +86,32 @@ export const HeroSprite = ({
     };
   }, []);
 
+  if (!image) return null;
+
   return (
-    <Layer>
-      {image && (
-        <Group
-          ref={groupRef}
-          width={animation.hitboxFrames[currentAnimation].width}
-          height={animation.hitboxFrames[currentAnimation].height}>
-          <Image // Картинка инструмента
-            ref={uiImageRef}
-            image={axeImage}
-            x={10}
-            y={-35}
-          />
-          <Rect // Хитбокс
-            width={animation.hitboxFrames[currentAnimation].width}
-            height={animation.hitboxFrames[currentAnimation].height}
-            // fill={'red'}
-          />
-          <Sprite // Спрайт
-            ref={spriteRef}
-            image={image}
-            animation={currentAnimation}
-            animations={animation.frames}
-            frameRate={animation.frameRate}
-            frameIndex={animation.frameIndex}
-          />
-        </Group>
-      )}
-    </Layer>
+    <Group
+      ref={groupRef}
+      width={animation.hitboxFrames[currentAnimation].width}
+      height={animation.hitboxFrames[currentAnimation].height}>
+      <Image // Картинка инструмента
+        ref={uiImageRef}
+        image={axeImage}
+        x={10}
+        y={-35}
+      />
+      <Rect // Хитбокс
+        width={animation.hitboxFrames[currentAnimation].width}
+        height={animation.hitboxFrames[currentAnimation].height}
+        // fill={'red'}
+      />
+      <Sprite // Спрайт
+        ref={spriteRef}
+        image={image}
+        animation={currentAnimation}
+        animations={animation.frames}
+        frameRate={animation.frameRate}
+        frameIndex={animation.frameIndex}
+      />
+    </Group>
   );
 };

@@ -1,7 +1,7 @@
 import { checkCollision } from './';
 
 export interface IData {
-  id: number;
+  id: string;
   x: number;
   y: number;
   width: number;
@@ -10,8 +10,8 @@ export interface IData {
 export type TargetType = Omit<IData, 'id'>;
 
 interface IReturnProps {
-  interactionId: number | null;
-  collidingId: number | null;
+  interactionId: string | null;
+  collidingId: string | null;
 }
 
 interface IProps {

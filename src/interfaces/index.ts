@@ -7,6 +7,8 @@ import type {
   ICollision,
   IInteractionArea,
   TreeActionsType,
+  StaticSprites,
+  LandscapeSpritesType,
 } from './animationInterface';
 
 export type {
@@ -18,4 +20,6 @@ export type {
   ICollision,
   IInteractionArea,
   TreeActionsType,
+  StaticSprites,
+  LandscapeSpritesType,
 };

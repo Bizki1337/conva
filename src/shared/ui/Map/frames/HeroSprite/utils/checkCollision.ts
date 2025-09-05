@@ -3,7 +3,7 @@ import type { IData, TargetType } from './checkCoverageAreas';
 export const checkCollision = (
   collisions: IData[],
   target: TargetType,
-): number | null => {
+): string | null => {
   const findedCollision = collisions.find((collision) => {
     // Проверяем пересечение по оси X
     const intersectX =
