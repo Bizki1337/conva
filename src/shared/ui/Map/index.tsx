@@ -1,6 +1,5 @@
-import { useEffect, useRef, type ComponentType, type RefObject } from 'react';
+import { useRef, type ComponentType, type RefObject } from 'react';
 import { Stage, Layer, Image } from 'react-konva';
-import { useImage } from 'react-konva-utils';
 
 import anvilPng from 'src/assets/objects/anvil.png';
 import fenceHorizontalPng from 'src/assets/objects/fence_horizontal.png';
@@ -119,6 +118,19 @@ export const Map = () => {
           })}
         </Layer>
         <Layer>
+          {/* отрисовка 1_000 персонажей */}
+          {/* {[...Array(1_000)].map((_, index) => {
+            return (
+              <HeroSprite // Отрисовка героя
+                key={`hero-${index}`}
+                metaDataRef={metaDataRef}
+                map={map}
+                initialPosY={Math.floor(Math.random() * 900)}
+                initialPosX={Math.floor(Math.random() * 900)}
+                collisionMapRef={collisionMapRef}
+              />
+            );
+          })} */}
           <HeroSprite // Отрисовка героя
             metaDataRef={metaDataRef}
             map={map}
