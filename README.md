@@ -1,69 +1,77 @@
-# React + TypeScript + Vite
+![Build Status](https://img.shields.io/badge/React-19.1-61DAFB?logo=react) ![Build Status](https://img.shields.io/badge/TypeScript-5.8-007ACC?logo=typescript) ![Build Status](https://img.shields.io/badge/Konva.js-9.3-00AEFF)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Интерактивное 2D-приложение на React и Konva.js с управляемым персонажем, системой коллизий и интерактивными объектами.
 
-Currently, two official plugins are available:
+Приложение доступно по адресу: !!Адрес
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Управление
 
-## Expanding the ESLint configuration
+| Действие                                      | Клавиша |
+| --------------------------------------------- | ------- |
+| Движение вверх                                | W       |
+| Движение влево                                | A       |
+| Движение вниз                                 | S       |
+| Движение вправо                               | D       |
+| Взаимодействие                                | F       |
+| Показать/Скрыть мониторинг производительности | P       |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Особенности
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Управление персонажем**: Плавное перемещение по холсту (WASD)
+- **Система коллизий**: Столкновения с непроходимыми объектами
+- **Интерактивные элементы**: Взаимодействие с объектами
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## Задний фон
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+![background](https://github.com/Bizki1337/conva/blob/main/public/background.png)
+
+## Хитбоксы
+
+- ![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png) - Хитбокс
+- ![#791ed4](https://placehold.co/15x15/791ed4/791ed4.png) - Область возможного взаимодействия с объектом
+
+![background](https://github.com/Bizki1337/conva/blob/main/public/hitbox.png)
+
+## Результат
+
+![background](https://github.com/Bizki1337/conva/blob/main/public/map.png)
+
+## Персонаж
+
+Клавиши **`W A S D`** для перемещения
+Клавиша **`F`** для взаимодействия с объектом (На данный момент только деревья)
+
+## Панель статистики
+
+В проекте интегрирована библиотека **stats.js**, предоставляющая мониторинг производительности в реальном времени.
+Клавиша **`P`** для отображения/скрытия панели статистики.
+
+- **FPS** - Количество кадров, отрендеренных за последнюю секунду. _Чем выше число, тем лучше._
+- **MS** - Миллисекунды, необходимые для рендеринга одного кадра. _Чем ниже число, тем лучше._
+- **MB** - Мегабайты выделенной памяти. _(Для точных данных запускайте Chrome с флагом `--enable-precise-memory-info`)_
+
+![fps.png](https://github.com/Bizki1337/conva/blob/main/public/fps.png)![ms.png](https://github.com/Bizki1337/conva/blob/main/public/ms.png)![mb.png](https://github.com/Bizki1337/conva/blob/main/public/mb.png)
+
+## Запуск приложения
+
+Установка зависимостей:
+
+```sh
+yarn
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Запуск dev-сервера:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+yarn dev
 ```
+
+## Благодарность за ассеты
+
+Все графические ресурсы (спрайты персонажа, объекты окружения) были любезно предоставлены бесплатно.
+Спасибо [**danieldiggle**](https://itch.io/profile/danieldiggle) за создание и безвозмездное распространение ассетов.
+
+### Ссылки на оригинальные ресурсы
+
+- [Портфолио художника](https://itch.io/profile/danieldiggle)
+- [Страница с ассетами](https://danieldiggle.itch.io/sunnyside)
